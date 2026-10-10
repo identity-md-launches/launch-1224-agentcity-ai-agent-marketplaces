@@ -1,0 +1,60 @@
+# AgentCity: AI agent marketplaces and networks
+
+**As of 10 October 2026. For Orino, building and debugging CLIs, scripts and automation for an AgentCity client.**
+
+This report compares six relevant platforms, not a ranking by market share. It uses public primary documentation checked on that date; documented capabilities are distinguished from roadmaps and unverified protections. Gaps and recommendations are analytical judgments. No numerical market estimates are used.
+
+## 1. Overview
+
+An AI agent marketplace connects buyers with software agents that can plan, call tools and deliver work, with discovery, pricing and some combination of execution, payments and reputation. An agent network can supply those components without offering a complete human-facing hiring experience. For example, [Virtuals ACP](https://os.virtuals.io/acp/overview) organizes commercial jobs, while [x402 Bazaar](https://docs.cdp.coinbase.com/x402/buyer/discover-services) catalogs paid endpoints that agents can discover and invoke.
+
+A freelance marketplace primarily hires a person accountable for a negotiated deliverable. An agent marketplace may sell a tool call, subscription or autonomous job; the buyer can itself be an agent. Reviews therefore need context about software versions, permissions, inputs and acceptance criteria, alongside the operator responsible for failures. Human freelancers can also use AI, so automation alone is not the distinction: the agent becomes the discoverable service and transaction participant.
+
+For AgentCity, the useful unit is a **human brief with an accepted artifact**: for Orino, a reproducible CLI fix with tests and installation instructions. Paying for model usage or successfully calling an API does not establish that the client's problem was solved.
+
+## 2. The main players
+
+“Quality shown” means available signals, not a guarantee. Payment options depend on the particular service, network and integration.
+
+| Marketplace or network | What it offers | How clients pay | How agent quality is shown |
+| --- | --- | --- | --- |
+| [Virtuals ACP / EconomyOS](https://os.virtuals.io/acp/overview) — job marketplace | Discover and hire specialized agents; service, subscription and fund-transfer jobs, with SDK and CLI workflows. | USDC job escrow; [ACP Serve](https://os.virtuals.io/acp/cli/acp-serve) also exposes x402 and MPP endpoints backed by escrow. | [Client workflow](https://os.virtuals.io/acp/cli/client-workflow) supports success-rate sorting and job reviews, recorded on-chain when the provider is ERC-8004-registered; client or evaluator approves delivery. |
+| [Olas Mech Marketplace](https://stack.olas.network/mech-server/) — agent service network | Agents and applications buy tools, predictions and other off-chain services through on-chain requests and delivery records. | Native crypto or ERC-20 payments; optional Nevermined subscription models. Funds and delivery are tracked through marketplace contracts. | On-chain request/response records and Karma reputation for completions and failures, under honest-participation assumptions; delivery hashes do not prove correctness. |
+| [Fetch.ai Agentverse](https://docs.agentverse.ai/documentation/getting-started/overview) — discovery and hosting network | Hosted and external agents discoverable through Agentverse and ASI:One, plus testing and analytics. | [uAgents payment protocol](https://uagents.fetch.ai/docs/guides/agent-payment-protocol) supports integration-defined rails, including FET-direct and USDC/Skyfire examples; this is not universal checkout. Agentverse's overview still marks monetization tools “coming soon.” | [Website/domain verification](https://docs.agentverse.ai/documentation/agent-discovery/verifications), activity and agent testing; the verification page marks email verification and Fetch Verified as future releases. Domain control does not certify job quality. |
+| [Nevermined Catalog and payments network](https://nevermined.ai/docs/products/catalog/overview) | Curated paid AI services and a Router for discovery and purchases under one budget; seller infrastructure for monetizing APIs. | Catalog services use x402 or MPP from funded wallets; the broader [payments platform](https://nevermined.ai/docs/getting-started/overview) supports fiat cards and USDC, prepaid or per-request plans. | [Readiness scoring](https://nevermined.ai/docs/products/catalog/agents-scoring) checks metadata, schemas, pricing, documentation and observed health; it explicitly does not judge output insight or buyer preference. |
+| [Coinbase x402 Bazaar](https://docs.cdp.coinbase.com/x402/buyer/discover-services) — discovery/payment network | Public searchable catalog of payment-gated APIs and tools, accessible through SDK, HTTP or MCP. | [x402 handshake](https://docs.cdp.coinbase.com/x402/how-it-works): verify authorization, perform work, settle, return response; crypto payment options advertised per endpoint, commonly USDC. Standard access payments have no job escrow. | Ranking considers metadata completeness, recent calls and unique payers; results expose activity counts. This shows usage, not verified success on a bespoke brief. |
+| [AWS Marketplace AI Agents and Tools](https://aws.amazon.com/marketplace/solutions/ai-agents-and-tools/) — enterprise procurement | Prebuilt agents, tools, software and services; selected products deploy on Bedrock AgentCore. | Fiat software charges on the [AWS bill](https://docs.aws.amazon.com/marketplace/latest/userguide/product-marketing.html), with pricing and contractual terms per offer; no task-acceptance escrow. | [Verified-purchase customer reviews](https://docs.aws.amazon.com/marketplace/latest/buyerguide/buyer-product-reviews.html), moderated through PeerSpot; external G2/PeerSpot reviews are separately labeled. Professional Services products do not support product reviews. |
+
+## 3. Trust and payments
+
+**Virtuals comes closest to AgentCity's job model.** Its [current lifecycle](https://os.virtuals.io/acp/concepts) locks USDC, releases it on approval and returns it on rejection; the client is the evaluator unless a neutral evaluator is designated. ACP identifies itself as a reference implementation of **Draft ERC-8183**. That [specification](https://eips.ethereum.org/EIPS/eip-8183) provides expiry-triggered refunds for funded or submitted jobs, but explicitly omits arbitration: rejection and expiry are final. Escrow protects the settlement rule, while quality still depends on the evaluator; independent appeals and the exact deployed expiry behavior should be checked before integration.
+
+**Olas handles nonresponse through reassignment.** Its [Mech guide](https://stack.olas.network/mech-server/) lets another Mech take over after the selected Mech misses the response deadline. That is a delivery recovery mechanism, not proof that a buggy result deserves payment. The reviewed guide does not establish a buyer-facing arbitration process or a guaranteed refund for unacceptable output; the chosen payment model's withdrawal and failure rules need separate verification.
+
+**Agentverse's payment messages are coordination, not escrow.** Its [protocol guide](https://uagents.fetch.ai/docs/guides/agent-payment-protocol) includes cancellation and completion messages and tells developers to implement real transfers, persistence, retries and idempotency. A cancellation message should not be treated as reversal of settled funds. Job refunds and disputes remain integration-specific; no universal marketplace remedy was established by the reviewed documentation.
+
+**Nevermined and Bazaar primarily meter access.** Nevermined's [documented flow](https://nevermined.ai/docs/getting-started/overview) validates entitlement and charges usage, while Bazaar's [payment flow](https://docs.cdp.coinbase.com/x402/how-it-works) verifies and settles a request. Neither reviewed flow supplies an independent judge for whether a returned script meets a brief. Post-settlement refunds require a provider/payment-rail process; the reviewed pages do not establish a uniform bad-output refund policy or appeal procedure. Card support in Nevermined should not be read as a promised job-quality guarantee.
+
+**AWS supplies a commercial support route.** Paid products must publish a [refund policy and seller contact method](https://docs.aws.amazon.com/marketplace/latest/userguide/refunds.html). Third-party software refund requests normally go to the seller; AWS processes authorized adjustments and handles specified exceptions such as metering errors. Private-offer refunds require seller authorization. Cancellation and refund are separate operations, and infrastructure charges are handled separately. These are billing remedies, not automatic acceptance tests or escrow for each agent job.
+
+Across these systems, [Draft ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) supplies identity, feedback and validation interfaces; payments are outside its scope. Its security section acknowledges fake-identity/reputation manipulation and that registration cannot guarantee functional, non-malicious capabilities.
+
+## 4. Gaps
+
+These are shortcomings across the six reviewed systems, rather than claims that no specialist solution exists anywhere.
+
+1. **Evidence of useful completion.** Calls, readiness scores and domain badges are weak predictors of whether Orino's automation works in the client's environment; even evaluator approval needs a concrete, repeatable rubric and software-version context.
+2. **Affordable, balanced dispute resolution.** Escrow can enforce a final decision, but the reviewed systems do not demonstrate a shared process for partial completion, evaluator conflicts and appeals that works economically for small jobs; billing support and reassignment only address parts of the problem.
+3. **Responsibility across subcontracted workflows.** A job may buy multiple tools, pay providers and fail downstream, yet these systems do not demonstrate a common, portable record joining permission grants, intermediate receipts, final acceptance and who must fund remediation; payment caps alone do not fix that accountability gap.
+
+## 5. Recommendations
+
+Build these in the following order; they are proposed features, not claims about AgentCity's current implementation.
+
+1. **Executable briefs:** Add a brief template for inputs, permitted actions, artifact format, environment and client-approved tests, because Orino and the client need the same definition of a working CLI or script.
+2. **Milestone escrow with recovery:** Hold payment by milestone, define acceptance and review deadlines, allow agreed partial refunds and provide a callable expiry recovery path, because small accepted outputs should be payable without trapping the entire job budget.
+3. **Evidence-based disputes:** Capture artifact hashes, test results and redacted logs, then offer a named human reviewer, conflict disclosure and a bounded appeal window, because both clients and agents need an understandable remedy for contested work.
+4. **Versioned work passports:** Publish job-linked reviews, operator/domain verification, software versions and task-specific success records with ERC-8004-compatible export, because clients need portable evidence that separates identity, availability and actual performance.
+5. **Scoped purchasing and tool permissions:** Give each job a capped, expiring budget, approved tools and payees, itemized x402 receipts and approval gates for sensitive actions, because Orino should be able to buy help while keeping the client's costs and authority bounded.
+
+AgentCity is assumed to be on Robinhood Chain as specified in the brief; competitor integrations are not assumed to exist there. Before implementing payments, its operator must verify chain-specific assets, contracts and facilitator support, choose refund and arbitration responsibilities, and publish those terms to clients.
